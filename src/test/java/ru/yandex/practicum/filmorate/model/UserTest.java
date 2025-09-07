@@ -30,42 +30,49 @@ class UserTest {
         user.setBirthday(LocalDate.of(1990, Month.APRIL, 22));
     }
 
-    @Test @DisplayName("Валидация успешна")
+    @Test
+    @DisplayName("Валидация успешна")
     void validateUser() {
         assertTrue(validator.validate(user).isEmpty());
     }
 
-    @Test @DisplayName("Ошибка - email null")
+    @Test
+    @DisplayName("Ошибка - email null")
     void nullEmail() {
         user.setEmail(null);
         assertFalse(validator.validate(user).isEmpty());
     }
 
-    @Test @DisplayName("Ошибка - email пробел")
+    @Test
+    @DisplayName("Ошибка - email пробел")
     void emptyEmail() {
         user.setEmail(" ");
         assertFalse(validator.validate(user).isEmpty());
     }
 
-    @Test @DisplayName("Ошибка - email введен не корректно")
+    @Test
+    @DisplayName("Ошибка - email введен не корректно")
     void noCorrectEmail() {
         user.setEmail("это-неправильный?эмейл@");
         assertFalse(validator.validate(user).isEmpty());
     }
 
-    @Test @DisplayName("Ошибка - логин null")
+    @Test
+    @DisplayName("Ошибка - логин null")
     void nullLogin() {
         user.setLogin(null);
         assertFalse(validator.validate(user).isEmpty());
     }
 
-    @Test @DisplayName("Ошибка - login пробел")
+    @Test
+    @DisplayName("Ошибка - login пробел")
     void emptyLogin() {
         user.setLogin(" ");
         assertFalse(validator.validate(user).isEmpty());
     }
 
-    @Test @DisplayName("Ошибка - дата рождения из будущего")
+    @Test
+    @DisplayName("Ошибка - дата рождения из будущего")
     void futureBirthday() {
         user.setBirthday(LocalDate.now());
         assertFalse(validator.validate(user).isEmpty());
