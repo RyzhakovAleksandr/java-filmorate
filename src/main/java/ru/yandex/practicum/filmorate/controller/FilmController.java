@@ -3,7 +3,12 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFindException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -14,12 +19,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FilmController.class);
     private final Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
     public Collection<Film> getFilms() {
-        log.debug("Получена коллекция фильмов getFilms()");
+        LOG.debug("Получена коллекция фильмов getFilms()");
         return films.values();
     }
 
@@ -27,19 +32,19 @@ public class FilmController {
     public Film add(@Valid @RequestBody Film film) {
         film.setId(getNextId());
         films.put(film.getId(), film);
-        log.debug("Добавлен фильм {}", film);
+        LOG.debug("Добавлен фильм {}", film);
         return film;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         if (!films.containsKey(film.getId())) {
-            log.debug("Фильм с id {} не найден", film.getId());
+            LOG.debug("Фильм с id {} не найден", film.getId());
             throw new NotFindException(String.format("Фильм с id %d не найден", film.getId()));
         }
 
         films.put(film.getId(), film);
-        log.debug("Фильм с id {} обновлен", film.getId());
+        LOG.debug("Фильм с id {} обновлен", film.getId());
         return film;
     }
 
