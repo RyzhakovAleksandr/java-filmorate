@@ -32,19 +32,20 @@ public class FilmController {
     public Film add(@Valid @RequestBody Film film) {
         film.setId(getNextId());
         films.put(film.getId(), film);
-        LOG.debug("Добавлен фильм {}", film);
+        LOG.debug("Запись фильм: {}, успешно добавлена", film);
         return film;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         if (!films.containsKey(film.getId())) {
-            LOG.debug("Фильм с id {} не найден", film.getId());
-            throw new NotFindException(String.format("Фильм с id %d не найден", film.getId()));
+            LOG.debug("Ошибка обновления. Фильм с индификационным номером = {} не найден", film.getId());
+            throw new NotFindException("Ошибка обновления. Фильм не найден");
         }
 
+        Film existingFilm = films.get(film.getId());
         films.put(film.getId(), film);
-        LOG.debug("Фильм с id {} обновлен", film.getId());
+        LOG.debug("Данные фильма успешно обновлены {} -> {}", existingFilm, film);
         return film;
     }
 

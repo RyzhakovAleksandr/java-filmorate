@@ -5,27 +5,30 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.AssertTrue;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.Month;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 public class Film {
     private static final int MAX_MESSAGE_LENGTH = 200;
     private static final int CINEMA_BIRTH_YEAR = 1895;
     private static final int CINEMA_BIRTH_DAY = 28;
 
-    private Long id;
+    Long id;
     @NotBlank(message = "Назввание фильма не должно быть пустым")
-    private String name;
+    String name;
     @NotBlank(message = "Описание фильма не должно быть пустым")
     @Size(max = MAX_MESSAGE_LENGTH, message = "Максимальное количество символов {max}")
-    private String description;
+    String description;
     @NotNull
-    private LocalDate releaseDate;
+    LocalDate releaseDate;
     @Positive
-    private long duration;
+    long duration;
 
     @AssertTrue(message = "Фильм не мог быть снят до изобритения кинемотографа")
     private boolean isReleaseDateValid() {

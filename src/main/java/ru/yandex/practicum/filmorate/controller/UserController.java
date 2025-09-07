@@ -33,19 +33,20 @@ public class UserController {
         user.setId(getNextId());
         checkName(user);
         users.put(user.getId(), user);
-        LOG.debug("Пользователь создан {}", user);
+        LOG.debug("Пользователь добавлен успешно {}", user);
         return user;
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         if (!users.containsKey(user.getId())) {
-            LOG.debug("Пользователь с id {} не найден", user.getId());
-            throw new NotFindException(String.format("Пользователь с id %d не найден", user.getId()));
+            LOG.debug("Пользователь с индификационным номером = {} не найден", user.getId());
+            throw new NotFindException("Ошибка обновления. Пользователь не найден");
         }
         checkName(user);
+        User existingUser = users.get(user.getId());
         users.put(user.getId(), user);
-        LOG.debug("Пользователь с id {} обнавлен", user.getId());
+        LOG.debug("Данные пользователя успешно обнавлены {} -> {}", existingUser, user);
         return user;
     }
 
