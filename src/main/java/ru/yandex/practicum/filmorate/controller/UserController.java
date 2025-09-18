@@ -15,6 +15,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
+    private static final String USER_BY_ID_PATH = "/{userId}";
+    private static final String FRIEND_ACTION_PATH = "/{id}/friends/{friendId}";
+
     private final UserService userService;
 
     @GetMapping
@@ -22,7 +25,7 @@ public class UserController {
         return userService.getUsers();
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping(USER_BY_ID_PATH)
     public User getUser(@PathVariable long userId) {
         Optional<User> user = userService.getUser(userId);
         return user.orElseThrow(
@@ -41,17 +44,17 @@ public class UserController {
         return userService.update(user);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping(USER_BY_ID_PATH)
     public User delete(@PathVariable long userId) {
         return userService.delete(userId);
     }
 
-    @PutMapping("/{id}/friends/{friendsId}")
-    public void addFriend(@PathVariable("id") long userId, @PathVariable long friendsId) {
-        userService.addFriend(userId, friendsId);
+    @PutMapping(FRIEND_ACTION_PATH)
+    public void addFriend(@PathVariable("id") long userId, @PathVariable long friendId) {
+        userService.addFriend(userId, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
+    @DeleteMapping(FRIEND_ACTION_PATH)
     public void removeFriend(@PathVariable("id") long userId, @PathVariable long friendId) {
         userService.removeFriend(userId, friendId);
     }

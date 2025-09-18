@@ -33,12 +33,7 @@ public class FilmService {
     }
 
     public Film update(Film newFilm) {
-        Optional<Film> optionalFilm = filmStorage.getFilm(newFilm.getId());
-
-        if (optionalFilm.isEmpty()) {
-            throw new NotFindException(String.format("Фильм с номером id=%d не найден", newFilm.getId()));
-        }
-        Film oldFilm = optionalFilm.get();
+        Film oldFilm = getFilmOrThrow(newFilm.getId());
 
         if (newFilm.getName() != null) {
             oldFilm.setName(newFilm.getName());
@@ -61,23 +56,16 @@ public class FilmService {
     }
 
     public void addLike(long filmId, long userId) {
-        Film film = filmStorage.getFilm(filmId).orElseThrow(
-                () -> new NotFindException(String.format("Фильм с id=%d не найден", filmId))
-        );
-        if (!userStorage.existsById(userId)) {
-            throw new NotFindException(String.format("Пользователь с id=%d не найден", userId));
-        }
+        Film film = getFilmOrThrow(filmId);
+        validateUserExists(userId);
+
         log.trace("Пользователь с id={} добавил like фильму с id={}", userId, filmId);
         film.addUserLike(userId);
     }
 
     public void removeLike(long filmId, long userId) {
-        Film film = filmStorage.getFilm(filmId).orElseThrow(
-                () -> new NotFindException(String.format("Фильм с id=%d не найден", filmId))
-        );
-        if (!userStorage.existsById(userId)) {
-            throw new NotFindException(String.format("Пользователь с id=%d не найден", userId));
-        }
+        Film film = getFilmOrThrow(filmId);
+        validateUserExists(userId);
         log.trace("Пользователь с id={} убрал like фильму с id={}", userId, filmId);
         film.removeUserLike(userId);
     }
@@ -92,5 +80,20 @@ public class FilmService {
                 .sorted(Comparator.comparing(Film::getLikesCount).reversed())
                 .limit(count)
                 .toList();
+    }
+
+    private Film getFilmOrThrow(long filmId) {
+        return filmStorage.getFilm(filmId)
+                .orElseThrow(() -> new NotFindException(
+                        String.format("Фильм с id=%d не найден", filmId)
+                ));
+    }
+
+    private void validateUserExists(long userId) {
+        if (!userStorage.existsById(userId)) {
+            throw new NotFindException(
+                    String.format("Пользователь с id=%d не найден", userId)
+            );
+        }
     }
 }

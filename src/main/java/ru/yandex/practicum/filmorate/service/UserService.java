@@ -31,11 +31,7 @@ public class UserService {
     }
 
     public User update(User newUser) {
-        Optional<User> optionalUser = userStorage.getUser(newUser.getId());
-
-        User oldUser = optionalUser.orElseThrow(
-                () -> new NotFindException(String.format("Пользователь с номером=%d, не найден>", newUser.getId()))
-        );
+        User oldUser = getUserOrThrow(newUser.getId());
 
         if (newUser.getName() != null) {
             oldUser.setName(newUser.getName());
@@ -57,58 +53,33 @@ public class UserService {
     }
 
     public void addFriend(long userId, long friendId) {
-        User user = userStorage.getUser(userId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", userId))
-                );
-        User friend = userStorage.getUser(friendId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", friendId))
-                );
-        if (userId == friendId) {
-            throw new NotFindException("Нельзя самого себя добавить в друзья");
-        }
+        User user = getUserOrThrow(userId);
+        User friend = getUserOrThrow(friendId);
+        validateNotSelf(userId, friendId);
         log.trace("addFriend(userId, friendId). Пользователи id={} и id={}, добавились в друзья", userId, friendId);
         user.addFriend(friendId);
         friend.addFriend(userId);
     }
 
     public void removeFriend(long userId, long friendId) {
-        User user = userStorage.getUser(userId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", userId))
-                );
-        User friend = userStorage.getUser(friendId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", friendId))
-                );
-        if (userId == friendId) {
-            throw new NotFindException("Нельзя самого себя убрать их друзей");
-        }
+        User user = getUserOrThrow(userId);
+        User friend = getUserOrThrow(friendId);
+        validateNotSelf(userId, friendId);
         log.trace("removeFriend(userId, friendId). Пользователи id={} и id={}, больше не друзья", userId, friendId);
         user.removeFriend(friendId);
         friend.removeFriend(userId);
     }
 
     public Collection<User> getFriends(long userId) {
-        User user = userStorage.getUser(userId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", userId))
-                );
+        User user = getUserOrThrow(userId);
         Set<Long> friendIds = user.getFriends();
         log.trace("getFriends(userId). Получен список друзей у пользователя с id={}", userId);
         return getListUsers(friendIds);
     }
 
     public Collection<User> getCommonFriends(long firstUserId, long secondUserId) {
-        User firstUser = userStorage.getUser(firstUserId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", firstUserId))
-                );
-        User secondUser = userStorage.getUser(secondUserId)
-                .orElseThrow(
-                        () -> new NotFindException(String.format("Пользователь с номером %d не найден", secondUserId))
-                );
+        User firstUser = getUserOrThrow(firstUserId);
+        User secondUser = getUserOrThrow(secondUserId);
         Collection<User> firstUserFriends = getListUsers(firstUser.getFriends());
         Collection<User> secondUserFriends = getListUsers(secondUser.getFriends());
 
@@ -120,6 +91,19 @@ public class UserService {
                 .toList();
     }
 
+    private User getUserOrThrow(long userId) {
+        return userStorage.getUser(userId)
+                .orElseThrow(() -> new NotFindException(
+                        String.format("Пользователь с id=%d не найден", userId)
+                ));
+    }
+
+    private void validateNotSelf(long userId, long friendId) {
+        if (userId == friendId) {
+            throw new NotFindException("Нельзя добавлять/удалять самого себя в друзья");
+        }
+    }
+
     private void checkName(User user) {
         if (user.getName() == null) {
             user.setName(user.getLogin());
@@ -128,9 +112,7 @@ public class UserService {
 
     private Collection<User> getListUsers(Set<Long> ids) {
         return ids.stream()
-                .map(userStorage::getUser)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(this::getUserOrThrow)
                 .toList();
     }
 }
