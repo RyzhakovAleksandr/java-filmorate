@@ -11,6 +11,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.HashSet;
+import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
@@ -29,6 +31,19 @@ public class Film {
     LocalDate releaseDate;
     @Positive
     long duration;
+    Set<Long> usersWhoLiked = new HashSet<>();
+
+    public void addUserLike(Long userId) {
+        usersWhoLiked.add(userId);
+    }
+
+    public void removeUserLike(Long userId) {
+        usersWhoLiked.remove(userId);
+    }
+
+    public int getLikesCount() {
+        return usersWhoLiked.size();
+    }
 
     @AssertTrue(message = "Фильм не мог быть снят до изобритения кинемотографа")
     private boolean isReleaseDateValid() {
