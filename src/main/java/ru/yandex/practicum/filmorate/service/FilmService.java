@@ -1,99 +1,97 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFindException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
 
-    public Collection<Film> getFilms() {
-        return filmStorage.getFilms();
-    }
+    public Film createFilm(Film film) {
+        if (film.getMpa() != null && film.getMpa().getId() != null) {
+            mpaStorage.findById(film.getMpa().getId())
+                    .orElseThrow(() -> new NotFindException("MPA рейтинг с id " + film.getMpa().getId() + " не найден"));
+        } else {
+            throw new ValidationException("MPA рейтинг обязателен");
+        }
 
-    public Optional<Film> getFilm(long id) {
-        return filmStorage.getFilm(id);
-    }
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            for (Genre genre : film.getGenres()) {
+                genreStorage.findById(genre.getId())
+                        .orElseThrow(() -> new NotFindException("Жанр с id " + genre.getId() + " не найден"));
+            }
+            film.setGenres(film.getGenres().stream()
+                    .distinct()
+                    .collect(Collectors.toList()));
+        }
 
-    public Film create(Film film) {
+        validateFilm(film);
         return filmStorage.create(film);
     }
 
-    public Film update(Film newFilm) {
-        Film oldFilm = getFilmOrThrow(newFilm.getId());
+    public Film updateFilm(Film film) {
+        Film existingFilm = filmStorage.findById(film.getId())
+                .orElseThrow(() -> new NotFindException("Фильм с id " + film.getId() + " не найден"));
 
-        if (newFilm.getName() != null) {
-            oldFilm.setName(newFilm.getName());
-        }
-        if (newFilm.getDescription() != null && !newFilm.getDescription().isBlank()) {
-            oldFilm.setDescription(newFilm.getDescription());
-        }
-        if (newFilm.getReleaseDate() != null) {
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        }
-        if (newFilm.getDuration() >= 0) {
-            oldFilm.setDuration(newFilm.getDuration());
+        if (film.getMpa() != null && film.getMpa().getId() != null) {
+            mpaStorage.findById(film.getMpa().getId())
+                    .orElseThrow(() -> new NotFindException("MPA рейтинг с id " + film.getMpa().getId() + " не найден"));
+        } else {
+            throw new ValidationException("MPA рейтинг обязателен");
         }
 
-        return filmStorage.update(oldFilm);
-    }
-
-    public Film delete(long id) {
-        return filmStorage.delete(id);
-    }
-
-    public void addLike(long filmId, long userId) {
-        Film film = getFilmOrThrow(filmId);
-        validateUserExists(userId);
-
-        log.trace("Пользователь с id={} добавил like фильму с id={}", userId, filmId);
-        film.addUserLike(userId);
-    }
-
-    public void removeLike(long filmId, long userId) {
-        Film film = getFilmOrThrow(filmId);
-        validateUserExists(userId);
-        log.trace("Пользователь с id={} убрал like фильму с id={}", userId, filmId);
-        film.removeUserLike(userId);
-    }
-
-    public Collection<Film> findFilmsWithTopLikes(
-            @Positive(message = "Параметр count должен быть положительным числом") int count) {
-
-        log.trace("Список фильмов по поплуярности в количестве: {}", count);
-
-        return filmStorage.getFilms()
-                .stream()
-                .sorted(Comparator.comparing(Film::getLikesCount).reversed())
-                .limit(count)
-                .toList();
-    }
-
-    private Film getFilmOrThrow(long filmId) {
-        return filmStorage.getFilm(filmId)
-                .orElseThrow(() -> new NotFindException(
-                        String.format("Фильм с id=%d не найден", filmId)
-                ));
-    }
-
-    private void validateUserExists(long userId) {
-        if (!userStorage.existsById(userId)) {
-            throw new NotFindException(
-                    String.format("Пользователь с id=%d не найден", userId)
-            );
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                genreStorage.findById(genre.getId())
+                        .orElseThrow(() -> new NotFindException("Жанр с id " + genre.getId() + " не найден"));
+            }
         }
+
+        validateFilm(film);
+        return filmStorage.update(film);
+    }
+
+    public List<Film> getAllFilms() {
+        return filmStorage.findAll();
+    }
+
+    public Film getFilmById(Long id) {
+        return filmStorage.findById(id)
+                .orElseThrow(() -> new RuntimeException("Фильм с номером не найден: " + id));
+    }
+
+    public void addLike(Long filmId, Long userId) {
+        filmStorage.addLike(filmId, userId);
+    }
+
+    public void removeLike(Long filmId, Long userId) {
+        filmStorage.removeLike(filmId, userId);
+    }
+
+    public List<Film> getPopularFilms(int count) {
+        return filmStorage.getPopularFilms(count);
+    }
+
+    private void validateFilm(Film film) {
+        if (film.getReleaseDate().isBefore(java.time.LocalDate.of(1895, 12, 28))) {
+            throw new RuntimeException("Фильм не мог быть выпущен раньше чем 28 декабря 1895 года");
+        }
+    }
+
+    public void delete(Long id) {
+        filmStorage.delete(id);
     }
 }

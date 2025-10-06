@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,31 +21,34 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getUsers() {
-        return userService.getUsers();
+        return userService.getAllUsers();
     }
 
     @GetMapping(USER_BY_ID_PATH)
     public User getUser(@PathVariable long userId) {
-        Optional<User> user = userService.getUser(userId);
-        return user.orElseThrow(
-                () -> new NotFindException(String.format("Пользователь с номером %d не найден", userId))
-        );
+        try {
+            return userService.getUserById(userId);
+        } catch (RuntimeException e) {
+            throw new NotFindException(String.format("Пользователь с номером %d не найден", userId));
+        }
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User user) {
-        return userService.create(user);
+        return userService.createUser(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        return userService.update(user);
+        return userService.updateUser(user);
     }
 
     @DeleteMapping(USER_BY_ID_PATH)
     public User delete(@PathVariable long userId) {
-        return userService.delete(userId);
+        User user = getUser(userId);
+        userService.delete(userId);
+        return user;
     }
 
     @PutMapping(FRIEND_ACTION_PATH)

@@ -21,13 +21,16 @@ class UserTest {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
+
+
     @BeforeEach
     void setUpEach() {
-        user = new User();
-        user.setId(1L);
-        user.setEmail("other@example.ru");
-        user.setLogin("other");
-        user.setBirthday(LocalDate.of(1990, Month.APRIL, 22));
+        user = User.builder()
+                .id(1L)
+                .email("other@example.ru")
+                .login("other")
+                .birthday(LocalDate.of(1990, Month.APRIL, 22))
+                .build();
     }
 
     @Test
