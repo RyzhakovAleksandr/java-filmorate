@@ -26,10 +26,8 @@ class MpaGenreDbStorageTest {
 
     @Test
     void testFindAllMpa() {
-        // When
         List<Mpa> mpaList = mpaStorage.findAll();
 
-        // Then - проверяем, что все MPA рейтинги загружены из data.sql
         assertThat(mpaList).hasSize(5);
         assertThat(mpaList)
                 .extracting(Mpa::getName)
@@ -38,10 +36,8 @@ class MpaGenreDbStorageTest {
 
     @Test
     void testFindMpaById() {
-        // When
         Optional<Mpa> mpa = mpaStorage.findById(1L);
 
-        // Then
         assertThat(mpa)
                 .isPresent()
                 .hasValueSatisfying(m ->
@@ -53,10 +49,8 @@ class MpaGenreDbStorageTest {
 
     @Test
     void testFindAllGenres() {
-        // When
         List<Genre> genres = genreStorage.findAll();
 
-        // Then - проверяем, что все жанры загружены из data.sql
         assertThat(genres).hasSize(6);
         assertThat(genres)
                 .extracting(Genre::getName)
@@ -65,10 +59,8 @@ class MpaGenreDbStorageTest {
 
     @Test
     void testFindGenreById() {
-        // When
         Optional<Genre> genre = genreStorage.findById(1L);
 
-        // Then
         assertThat(genre)
                 .isPresent()
                 .hasValueSatisfying(g ->

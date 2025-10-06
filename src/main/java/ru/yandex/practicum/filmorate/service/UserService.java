@@ -46,10 +46,6 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        if (userId.equals(friendId)) {
-            throw new RuntimeException("Нельзя добавить самого себя в друзья");
-        }
-
         User user = userStorage.findById(userId)
                 .orElseThrow(() -> new NotFindException("Пользователь с id " + userId + " не найден"));
 

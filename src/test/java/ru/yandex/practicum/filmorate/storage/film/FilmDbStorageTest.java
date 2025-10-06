@@ -26,20 +26,17 @@ class FilmDbStorageTest {
 
     @Test
     void testFindFilmById() {
-        // Given - создаем фильм
         Film newFilm = Film.builder()
                 .name("Test Film")
                 .description("Test Description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
-                .mpa(Mpa.builder().id(1L).build()) // G рейтинг
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
         Film createdFilm = filmStorage.create(newFilm);
 
-        // When - ищем фильм по ID
         Optional<Film> filmOptional = filmStorage.findById(createdFilm.getId());
 
-        // Then - проверяем, что фильм найден
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(film ->
@@ -52,19 +49,16 @@ class FilmDbStorageTest {
 
     @Test
     void testCreateFilm() {
-        // Given
         Film newFilm = Film.builder()
                 .name("New Film")
                 .description("New Description")
                 .releaseDate(LocalDate.of(2020, 5, 5))
                 .duration(150)
-                .mpa(Mpa.builder().id(3L).build()) // PG-13 рейтинг
+                .mpa(Mpa.builder().id(3L).build())
                 .build();
 
-        // When
         Film createdFilm = filmStorage.create(newFilm);
 
-        // Then
         assertThat(createdFilm).isNotNull();
         assertThat(createdFilm.getId()).isNotNull();
         assertThat(createdFilm.getName()).isEqualTo("New Film");
@@ -73,7 +67,6 @@ class FilmDbStorageTest {
 
     @Test
     void testUpdateFilm() {
-        // Given - создаем фильм
         Film film = Film.builder()
                 .name("Old Film")
                 .description("Old Description")
@@ -83,7 +76,6 @@ class FilmDbStorageTest {
                 .build();
         Film createdFilm = filmStorage.create(film);
 
-        // When - обновляем фильм
         Film updatedFilm = Film.builder()
                 .id(createdFilm.getId())
                 .name("Updated Film")
@@ -94,7 +86,6 @@ class FilmDbStorageTest {
                 .build();
         filmStorage.update(updatedFilm);
 
-        // Then - проверяем обновление
         Optional<Film> foundFilm = filmStorage.findById(createdFilm.getId());
         assertThat(foundFilm)
                 .isPresent()
@@ -108,7 +99,6 @@ class FilmDbStorageTest {
 
     @Test
     void testFindAllFilms() {
-        // Given - создаем несколько фильмов
         Film film1 = Film.builder()
                 .name("Film One")
                 .description("Description One")
@@ -126,10 +116,8 @@ class FilmDbStorageTest {
         filmStorage.create(film1);
         filmStorage.create(film2);
 
-        // When - получаем все фильмы
         List<Film> films = filmStorage.findAll();
 
-        // Then - проверяем, что оба фильма в списке
         assertThat(films).hasSize(2);
         assertThat(films)
                 .extracting(Film::getName)
@@ -138,7 +126,6 @@ class FilmDbStorageTest {
 
     @Test
     void testAddLikeAndGetPopular() {
-        // Given - создаем пользователя и фильм
         User user = User.builder()
                 .email("user@mail.ru")
                 .login("userLogin")
@@ -154,15 +141,12 @@ class FilmDbStorageTest {
                 .mpa(Mpa.builder().id(1L).build())
                 .build();
 
-        // Нужно импортировать UserDbStorage и создать пользователя
         User createdUser = userStorage.create(user);
         Film createdFilm = filmStorage.create(film);
 
-        // When - добавляем лайк от созданного пользователя
         filmStorage.addLike(createdFilm.getId(), createdUser.getId());
         List<Film> popularFilms = filmStorage.getPopularFilms(10);
 
-        // Then - проверяем, что фильм в списке популярных
         assertThat(popularFilms).isNotEmpty();
         assertThat(popularFilms.get(0).getId()).isEqualTo(createdFilm.getId());
     }
