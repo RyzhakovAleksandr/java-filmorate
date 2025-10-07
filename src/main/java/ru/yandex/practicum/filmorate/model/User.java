@@ -12,18 +12,18 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class User {
-    private Long id;
+    Long id;
 
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Email должен быть корректным")
-    private String email;
+    String email;
 
     @NotBlank(message = "Логин не может быть пустым")
     @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
-    private String login;
+    String login;
 
-    private String name;
+    String name;
 
     @Past(message = "Дата рождения не может быть в будущем")
-    private LocalDate birthday;
+    LocalDate birthday;
 }

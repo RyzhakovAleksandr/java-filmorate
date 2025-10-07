@@ -23,7 +23,7 @@ public class FilmService {
     public Film createFilm(Film film) {
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             mpaStorage.findById(film.getMpa().getId())
-                    .orElseThrow(() -> new NotFindException("MPA рейтинг с id " + film.getMpa().getId() + " не найден"));
+                    .orElseThrow(() -> new NotFindException(String.format("MPA рейтинг с id %d не найден", film.getMpa().getId())));
         } else {
             throw new ValidationException("MPA рейтинг обязателен");
         }
@@ -31,7 +31,7 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
                 genreStorage.findById(genre.getId())
-                        .orElseThrow(() -> new NotFindException("Жанр с id " + genre.getId() + " не найден"));
+                        .orElseThrow(() -> new NotFindException(String.format("Жанр с id %d не найден", genre.getId())));
             }
             film.setGenres(film.getGenres().stream()
                     .distinct()
@@ -44,11 +44,11 @@ public class FilmService {
 
     public Film updateFilm(Film film) {
         Film existingFilm = filmStorage.findById(film.getId())
-                .orElseThrow(() -> new NotFindException("Фильм с id " + film.getId() + " не найден"));
+                .orElseThrow(() -> new NotFindException(String.format("Фильм с id %d не найден", film.getId())));
 
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             mpaStorage.findById(film.getMpa().getId())
-                    .orElseThrow(() -> new NotFindException("MPA рейтинг с id " + film.getMpa().getId() + " не найден"));
+                    .orElseThrow(() -> new NotFindException(String.format("MPA рейтинг с id %d не найден", film.getMpa().getId())));
         } else {
             throw new ValidationException("MPA рейтинг обязателен");
         }
@@ -56,7 +56,7 @@ public class FilmService {
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 genreStorage.findById(genre.getId())
-                        .orElseThrow(() -> new NotFindException("Жанр с id " + genre.getId() + " не найден"));
+                        .orElseThrow(() -> new NotFindException(String.format("Жанр с id %d не найден", genre.getId())));
             }
         }
 
@@ -70,7 +70,7 @@ public class FilmService {
 
     public Film getFilmById(Long id) {
         return filmStorage.findById(id)
-                .orElseThrow(() -> new RuntimeException("Фильм с номером не найден: " + id));
+                .orElseThrow(() -> new RuntimeException(String.format("Фильм с номером не найден: %d", id)));
     }
 
     public void addLike(Long filmId, Long userId) {
