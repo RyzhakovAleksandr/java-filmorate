@@ -1,52 +1,46 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
+@Builder
 public class Film {
     private static final int MAX_MESSAGE_LENGTH = 200;
     private static final int CINEMA_BIRTH_YEAR = 1895;
     private static final int CINEMA_BIRTH_DAY = 28;
 
     Long id;
-    @NotBlank(message = "Назввание фильма не должно быть пустым")
+
+    @NotBlank(message = "Название фильма не может быть пустым")
     String name;
-    @NotBlank(message = "Описание фильма не должно быть пустым")
-    @Size(max = MAX_MESSAGE_LENGTH, message = "Максимальное количество символов {max}")
+
+    @NotBlank(message = "Описание фильма не может быть пустым")
+    @Size(max = 200, message = "Описание фильма не может превышать 200 символов")
     String description;
-    @NotNull
+
+    @NotNull(message = "Дата релиза обязательна")
     LocalDate releaseDate;
-    @Positive
-    long duration;
-    Set<Long> usersWhoLiked = new HashSet<>();
 
-    public void addUserLike(Long userId) {
-        usersWhoLiked.add(userId);
-    }
+    @Positive(message = "Продолжительность фильма должна быть положительной")
+    Integer duration;
 
-    public void removeUserLike(Long userId) {
-        usersWhoLiked.remove(userId);
-    }
+    @NotNull(message = "Рейтинг MPA обязателен")
+    Mpa mpa;
 
-    public int getLikesCount() {
-        return usersWhoLiked.size();
-    }
+    List<Genre> genres;
 
     @AssertTrue(message = "Фильм не мог быть снят до изобритения кинемотографа")
-    private boolean isReleaseDateValid() {
+    boolean isReleaseDateValid() {
         return releaseDate.isAfter(LocalDate.of(CINEMA_BIRTH_YEAR, Month.DECEMBER, CINEMA_BIRTH_DAY));
     }
 }

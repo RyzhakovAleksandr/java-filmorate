@@ -21,12 +21,14 @@ class FilmTest {
 
     @BeforeEach
     void setUpEach() {
-        film = new Film();
-        film.setId(1L);
-        film.setName("Film 1");
-        film.setDescription("description about Film 1");
-        film.setReleaseDate(LocalDate.now());
-        film.setDuration(9999L);
+        film = Film.builder()
+                .id(1L)
+                .name("Film 1")
+                .description("description about Film 1")
+                .releaseDate(LocalDate.now())
+                .duration(9999)  // Исправь на int/Integer (без L)
+                .mpa(Mpa.builder().id(1L).name("G").build())  // Добавь MPA
+                .build();
     }
 
     @Test
@@ -73,7 +75,7 @@ class FilmTest {
     @Test
     @DisplayName("Ошибка - Описание слишком длинное")
     void overLengthDescription() {
-        film.setDescription("description about Film 1".repeat(50));
+        film.setDescription("1".repeat(201));
         assertFalse(validator.validate(film).isEmpty());
     }
 
@@ -87,7 +89,7 @@ class FilmTest {
     @Test
     @DisplayName("Ошибка - Продолжительность отрицательная")
     void negativeDuration() {
-        film.setDuration(-9999L);
+        film.setDuration(-9999);
         assertFalse(validator.validate(film).isEmpty());
     }
 
